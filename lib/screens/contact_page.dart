@@ -115,9 +115,16 @@ class _ContactsPageState extends State<ContactsPage> {
 
             if (sending && _selectedItems.isNotEmpty) {
               _showAlertDialog("Operation Successfull", "Contacts added!.");
+              setState(() {
+                sending = false;
+              });
             } else {
               _showAlertDialog(
                   "Operation Failed", "Contacts failed tp upload!.");
+
+              setState(() {
+                sending = true;
+              });
             }
           },
           child: Ink(
