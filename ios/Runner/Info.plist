@@ -30,11 +30,8 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
-<<<<<<< HEAD
 	<key>NSContactsUsageDescription</key>  
 	<string>This app requires contacts access to function properly.</string>  
-=======
->>>>>>> 5cf01549ac7098701f585cd8c3827f505d14f21a
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
