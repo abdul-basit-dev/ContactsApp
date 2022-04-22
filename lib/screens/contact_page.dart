@@ -71,9 +71,11 @@ class _ContactsPageState extends State<ContactsPage> {
       if (res.body.toString().contains("0")) {
         setState(() {
           error = true;
-          success = false;
           sending = false;
           //refresh the UI when error is recieved from server
+          _isChecked =
+              List<bool>.filled(_contacts?.length ?? _contacts!.length, false);
+          _selectedItems.clear();
         });
       } else if (res.body.toString().contains("1")) {
         //after write success, make fields empty
@@ -122,9 +124,8 @@ class _ContactsPageState extends State<ContactsPage> {
                 sending = true;
               });
             }
-
             final snackBar = SnackBar(
-              content: Text(success! ? "Success" : "Failed"),
+              content: Text(success! ? "Failed" : "Success"),
             );
             ScaffoldMessenger.of(context).showSnackBar(snackBar);
           },
