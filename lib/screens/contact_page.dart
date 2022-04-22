@@ -20,18 +20,19 @@ class _ContactsPageState extends State<ContactsPage> {
 
   late List<bool> _isChecked;
   String msg = "";
-  String webUrl = "https://3toprealtors.com/addContacts.php";
-  bool? error, success;
-  bool sending = true;
-
+  //String webUrl = "https://3toprealtors.com/addContacts.php";
+  String webUrl = "https://driverowner.com/addContacts.php";
+  bool? error, success, sending;
+  bool selectAll = false;
   var title, number;
-
   @override
   void initState() {
     super.initState();
     getContacts();
     error = false;
+    sending = false;
     success = false;
+    msg = "";
   }
 
   Future<void> getContacts() async {
@@ -42,7 +43,6 @@ class _ContactsPageState extends State<ContactsPage> {
 
     setState(() {
       _contacts = contacts;
-
       _isChecked =
           List<bool>.filled(_contacts?.length ?? _contacts!.length, false);
     });
@@ -70,18 +70,18 @@ class _ContactsPageState extends State<ContactsPage> {
     if (res.statusCode == 200) {
       if (res.body.toString().contains("0")) {
         setState(() {
-          sending = false;
           error = true;
+          success = false;
+          sending = false;
           //refresh the UI when error is recieved from server
         });
-        // _showAlertDialog("OOPPs", "Uploading Failed.");
       } else if (res.body.toString().contains("1")) {
         //after write success, make fields empty
         setState(() {
           success = true;
+          sending = false;
           _isChecked =
               List<bool>.filled(_contacts?.length ?? _contacts!.length, false);
-          _selectedItems.add(MyContacts("", ""));
           _selectedItems.clear();
         });
       }
@@ -91,7 +91,7 @@ class _ContactsPageState extends State<ContactsPage> {
         error = true;
         sending = false;
         msg = "Error during sendign data.";
-        //mark error and refresh UI with setState
+        _showAlertDialog("Operation Failed", "Contacts failed to upload!.");
       });
     }
   }
@@ -107,31 +107,32 @@ class _ContactsPageState extends State<ContactsPage> {
               title = i.name;
               number = i.number;
               debugPrint("Ready :" + title + number);
-              if (sending) {
-                CircularProgressIndicator;
+              if (_selectedItems.isNotEmpty) {
                 sendData(title, number);
               }
             }
 
-            if (sending && _selectedItems.isNotEmpty) {
-              _showAlertDialog("Operation Successfull", "Contacts added!.");
+            if (_selectedItems.isEmpty) {
+              _showAlertDialog("Operation Failed", "Choose a contact first!.");
               setState(() {
                 sending = false;
               });
             } else {
-              _showAlertDialog(
-                  "Operation Failed", "Contacts failed tp upload!.");
-
               setState(() {
                 sending = true;
               });
             }
+
+            final snackBar = SnackBar(
+              content: Text(success! ? "Success" : "Failed"),
+            );
+            ScaffoldMessenger.of(context).showSnackBar(snackBar);
           },
           child: Ink(
             color: Colors.blue,
             height: kToolbarHeight,
             padding: const EdgeInsets.only(top: 16.0),
-            child: const Text("Upload"),
+            child: Text(sending! ? "Sending..." : "Upload"),
           ),
         ),
         centerTitle: false,
@@ -139,18 +140,35 @@ class _ContactsPageState extends State<ContactsPage> {
           InkWell(
             onTap: () {
               setState(() {
-                for (var i = 0; i < _isChecked.length; i++) {
-                  _isChecked[i] = true;
-                }
+                selectAll = !selectAll;
                 List<Contact> contact = _contacts!;
+                if (selectAll == false) {
+                  for (var i = 0; i < _isChecked.length; i++) {
+                    _isChecked[i] = false;
+                  }
+                  for (var item in contact) {
+                    title = item.displayName;
+                    final List<Item> _items = item.phones!;
+                    for (var i in _items) {
+                      number = i.value ?? "";
 
-                for (var item in contact) {
-                  title = item.displayName;
-                  final List<Item> _items = item.phones!;
-                  for (var i in _items) {
-                    number = i.value ?? "";
-                    _selectedItems.add(MyContacts(title!, number));
-                    debugPrint("added:" + title + number);
+                      _selectedItems.remove(MyContacts(title!, number));
+                      _selectedItems.clear();
+                      debugPrint("removed:" + title + number);
+                    }
+                  }
+                } else {
+                  for (var i = 0; i < _isChecked.length; i++) {
+                    _isChecked[i] = true;
+                  }
+                  for (var item in contact) {
+                    title = item.displayName;
+                    final List<Item> _items = item.phones!;
+                    for (var i in _items) {
+                      number = i.value ?? "";
+                      _selectedItems.add(MyContacts(title!, number));
+                      debugPrint("added:" + title + number);
+                    }
                   }
                 }
               });
